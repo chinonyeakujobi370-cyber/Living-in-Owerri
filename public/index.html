@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Living in Owerri</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#121a2f;--panel2:#18223d;--gold:#f4c95d;--green:#43d17a;--muted:#9ba8c7;--text:#f7f9ff}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(160deg,#08101d,#121a32 55%,#071a18);color:var(--text)}
+    button,input{font:inherit}button{cursor:pointer;border:0}.wrap{max-width:1180px;margin:auto;padding:20px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0 22px}
+    .brand{font-weight:900;font-size:25px}.brand span{color:var(--gold)}.pill{padding:8px 12px;border-radius:999px;background:#182442;color:#cfe0ff}
+    .hero{padding:34px 0 20px}.hero h1{font-size:clamp(38px,7vw,76px);line-height:.95;margin:0 0 14px}.hero p{color:var(--muted);font-size:18px;max-width:650px}
+    .grid{display:grid;grid-template-columns:1.5fr .9fr;gap:18px}.panel{background:rgba(18,26,47,.92);border:1px solid #273657;border-radius:22px;padding:18px;box-shadow:0 18px 60px #0004}
+    .map{min-height:430px;position:relative;overflow:hidden;background:linear-gradient(145deg,#173a31,#224c37 45%,#263d2f);border-radius:18px}
+    .road{position:absolute;background:#29344a;border:4px solid #4b5a6f;border-radius:20px;transform:rotate(-13deg)}.r1{width:120%;height:72px;left:-10%;top:160px}.r2{width:80%;height:64px;left:8%;top:285px;transform:rotate(20deg)}
+    .loc{position:absolute;padding:10px 13px;border-radius:14px;background:#f7f9ff;color:#10192b;font-weight:800;box-shadow:0 8px 20px #0004}.l1{left:9%;top:12%}.l2{right:9%;top:22%}.l3{left:16%;bottom:12%}.l4{right:13%;bottom:17%}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.stat{background:var(--panel2);padding:14px;border-radius:16px}.stat small{display:block;color:var(--muted)}.stat b{font-size:20px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.action{padding:14px;border-radius:14px;background:#22304f;color:white;text-align:left}.action:hover{background:#2d3d62}.action strong{display:block}.action small{color:#aebbd5}
+    .chat{display:flex;flex-direction:column;height:430px}.messages{flex:1;overflow:auto;background:#0b1325;border-radius:15px;padding:12px}.msg{margin-bottom:10px}.msg b{color:var(--gold)}.msg span{color:#d7deee}.chatbar{display:flex;gap:8px;margin-top:10px}.chatbar input{flex:1;background:#0b1325;color:white;border:1px solid #2b3b5d;border-radius:12px;padding:12px}.chatbar button,.primary{background:var(--gold);color:#10141f;font-weight:900;border-radius:12px;padding:12px 16px}
+    .money{color:var(--green)}footer{padding:30px 0;color:#73809e;text-align:center}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.map{min-height:360px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand">Living in <span>Owerri</span> 🏙️</div><div class="pill">🟢 <span id="online">1</span> online</div></header>
+<section class="hero"><h1>Your life.<br><span style="color:var(--gold)">Your Owerri.</span></h1><p>Build your virtual life in a multiplayer Owerri. Work, own a home, buy cars, visit clubs, meet people and use virtual money with other players.</p></section>
+<div class="grid">
+<section class="panel">
+  <h2>🌍 Explore Owerri</h2>
+  <div class="map"><div class="road r1"></div><div class="road r2"></div><div class="loc l1">🏠 New Owerri</div><div class="loc l2">🎵 Clubs</div><div class="loc l3">💼 Jobs</div><div class="loc l4">🛍️ City Mall</div></div>
+  <div class="stats"><div class="stat"><small>Virtual wallet</small><b class="money">₦<span id="cash">1,000</span> OWR</b></div><div class="stat"><small>Home</small><b id="home">Starter Apt.</b></div><div class="stat"><small>Car</small><b id="car">None</b></div></div>
+  <div class="actions">
+    <button class="action" onclick="work()"><strong>💼 Go to work</strong><small>Earn virtual OWR</small></button>
+    <button class="action" onclick="collect()"><strong>💰 Collect money</strong><small>Find a city bonus</small></button>
+    <button class="action" onclick="buyCar()"><strong>🚗 Buy a car</strong><small>Spend virtual OWR</small></button>
+    <button class="action" onclick="club()"><strong>🎵 Visit a club</strong><small>Socialize & meet players</small></button>
+  </div>
+</section>
+<section class="panel chat"><h2>💬 Owerri Chat Room</h2><div id="messages" class="messages"></div><div class="chatbar"><input id="chatInput" placeholder="Say something..." maxlength="300"><button onclick="sendChat()">Send</button></div></section>
+</div>
+<footer>All money shown here is <b>virtual game currency only</b> and has no real-world cash value.</footer>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket=io(); const id=localStorage.getItem("owerriId")||crypto.randomUUID(); localStorage.setItem("owerriId",id);
+const name=localStorage.getItem("owerriName")||("Player"+Math.floor(Math.random()*900+100)); localStorage.setItem("owerriName",name);
+let player={cash:1000,home:"Starter Apartment",car:"No car"};
+const $=id=>document.getElementById(id);
+function render(){ $("cash").textContent=Number(player.cash||0).toLocaleString();$("home").textContent=(player.home||"Starter Apartment").replace("Starter Apartment","Starter Apt.");$("car").textContent=player.car==="No car"?"None":player.car; }
+socket.on("connect",()=>socket.emit("join",{id,name})); socket.on("player",p=>{player=p;render()}); socket.on("presence",p=>$("online").textContent=p.online);
+socket.on("chat",m=>{const d=document.createElement("div");d.className="msg";d.innerHTML="<b>"+escapeHtml(m.name)+"</b>: <span>"+escapeHtml(m.text)+"</span>";$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight});
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function sendChat(){const i=$("chatInput");if(i.value.trim())socket.emit("chat",i.value.trim());i.value=""}
+$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
+function work(){player.cash+=250;alert("You earned ₦250 OWR from your virtual job.");render()}
+function collect(){player.cash+=100;alert("You found a ₦100 OWR city bonus.");render()}
+function buyCar(){if(player.cash<800)return alert("You need ₦800 OWR.");player.cash-=800;player.car="Toyota Corolla";alert("You bought a virtual Toyota Corolla.");render()}
+function club(){alert("Welcome to the club! Multiplayer social features are being expanded here.")}
+render();
+</script>
+</body>
+</html>
